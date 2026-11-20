@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#03080d" />
+  <!-- lets the page open fullscreen when added to the phone's home screen -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>চেয়া নদী</title>
+  <meta name="apple-mobile-web-app-title" content="চেয়া নদী" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="scene">
+    <!-- Water, riverbanks, trees and wake are drawn on this canvas by script.js -->
+    <canvas id="world"></canvas>
+
+    <!-- Warm lantern light spilling onto the water -->
+    <div class="lantern-light" id="lanternLight"></div>
+
+    <!-- ===================== THE BOAT (top-down view) ===================== -->
+    <svg class="boat" id="boat" viewBox="-100 -10 320 320" aria-hidden="true">
+      <defs>
+        <linearGradient id="hullOut" x1="0" x2="1">
+          <stop offset="0"   stop-color="#2c1a0d"/>
+          <stop offset=".5"  stop-color="#4d321c"/>
+          <stop offset="1"   stop-color="#2c1a0d"/>
+        </linearGradient>
+        <linearGradient id="planks" x1="0" x2="1">
+          <stop offset="0"   stop-color="#4f341e"/>
+          <stop offset=".42" stop-color="#86603c"/>
+          <stop offset=".58" stop-color="#8d6640"/>
+          <stop offset="1"   stop-color="#4f341e"/>
+        </linearGradient>
+        <linearGradient id="seat" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#a27850"/>
+          <stop offset="1" stop-color="#7a5634"/>
+        </linearGradient>
+        <linearGradient id="oarWood" x1="0" x2="1">
+          <stop offset="0" stop-color="#b48a5c"/>
+          <stop offset="1" stop-color="#7a5532"/>
+        </linearGradient>
+        <radialGradient id="glass">
+          <stop offset="0"   stop-color="#fffbe2"/>
+          <stop offset=".5"  stop-color="#ffd27a"/>
+          <stop offset="1"   stop-color="#ff9a2a"/>
+        </radialGradient>
+        <radialGradient id="lampLight">
+          <stop offset="0"   stop-color="#ffc070" stop-opacity=".55"/>
+          <stop offset=".45" stop-color="#ff9640" stop-opacity=".18"/>
+          <stop offset="1"   stop-color="#ff8030" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="hat" fx=".4" fy=".36">
+          <stop offset="0"   stop-color="#3a3128"/>
+          <stop offset=".55" stop-color="#1e1913"/>
+          <stop offset="1"   stop-color="#0e0c0a"/>
+        </radialGradient>
+        <radialGradient id="warmRim" cx=".5" cy="1" r=".75">
+          <stop offset="0" stop-color="#ffaa5a" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#ffaa5a" stop-opacity="0"/>
+        </radialGradient>
+        <clipPath id="innerClip">
+          <path d="M60,16 C86,46 98,104 98,170 C98,226 93,260 86,280 L34,280 C27,260 22,226 22,170 C22,104 34,46 60,16 Z"/>
+        </clipPath>
+        <clipPath id="outerClip">
+          <path d="M60,2 C92,36 107,100 107,170 C107,232 100,268 93,290 L27,290 C20,268 13,232 13,170 C13,100 28,36 60,2 Z"/>
+        </clipPath>
+      </defs>
+
+      <!-- foam line where the hull meets the water -->
+      <path class="foam" d="M60,2 C92,36 107,100 107,170 C107,232 100,268 93,290 L27,290 C20,268 13,232 13,170 C13,100 28,36 60,2 Z"
+            fill="none" stroke="rgba(190,220,255,.35)" stroke-width="6"/>
+
+      <!-- hull -->
+      <path d="M60,2 C92,36 107,100 107,170 C107,232 100,268 93,290 L27,290 C20,268 13,232 13,170 C13,100 28,36 60,2 Z" fill="url(#hullOut)"/>
+      <path d="M60,16 C86,46 98,104 98,170 C98,226 93,260 86,280 L34,280 C27,260 22,226 22,170 C22,104 34,46 60,16 Z" fill="url(#planks)"/>
+
+      <!-- inside the hull -->
+      <g clip-path="url(#innerClip)">
+        <!-- plank seams -->
+        <g fill="none" stroke="#3a2512" stroke-width="1" opacity=".75">
+          <path d="M60,10 C39,60 27,115 27,170 S30,262 31.5,292"/>
+          <path d="M60,10 C46,60 38,115 38,170 S40,262 41,292"/>
+          <path d="M60,10 C53,60 49,115 49,170 S50,262 50.5,292"/>
+          <path d="M60,10 L60,292" stroke-width="1.6"/>
+          <path d="M60,10 C67,60 71,115 71,170 S70,262 69.5,292"/>
+          <path d="M60,10 C74,60 82,115 82,170 S80,262 79,292"/>
+          <path d="M60,10 C81,60 93,115 93,170 S90,262 88.5,292"/>
+        </g>
+        <!-- ribs -->
+        <g fill="none" stroke="#452c16" stroke-width="2.6" opacity=".55">
+          <path d="M14,72 Q60,77 106,72"/>
+          <path d="M14,90 Q60,95 106,90"/>
+          <path d="M14,134 Q60,139 106,134"/>
+          <path d="M14,150 Q60,155 106,150"/>
+          <path d="M14,192 Q60,197 106,192"/>
+          <path d="M14,212 Q60,217 106,212"/>
+        </g>
+        <!-- a little bilge water -->
+        <ellipse cx="72" cy="84" rx="7" ry="13" fill="rgba(70,110,140,.3)"/>
+        <ellipse cx="70" cy="80" rx="2" ry="5" fill="rgba(200,220,240,.15)"/>
+        <!-- inner wall shadow -->
+        <path d="M60,16 C86,46 98,104 98,170 C98,226 93,260 86,280 L34,280 C27,260 22,226 22,170 C22,104 34,46 60,16 Z"
+              fill="none" stroke="rgba(0,0,0,.45)" stroke-width="12"/>
+
+        <!-- bow deck -->
+        <rect x="10" y="0" width="100" height="54" fill="url(#seat)"/>
+        <path d="M60,16 L60,54 M60,16 L46,54 M60,16 L74,54" stroke="rgba(55,32,14,.6)" stroke-width="1"/>
+        <path d="M10,54 H110" stroke="#3a2414" stroke-width="2.5"/>
+
+        <!-- front seat -->
+        <rect x="10" y="104" width="100" height="14" fill="url(#seat)"/>
+        <path d="M10,108 H110 M10,113 H110" stroke="rgba(60,35,15,.35)" stroke-width=".8"/>
+        <path d="M10,104 H110 M10,118 H110" stroke="#3a2414" stroke-width="1.4"/>
+
+        <!-- middle seat -->
+        <rect x="10" y="164" width="100" height="16" fill="url(#seat)"/>
+        <path d="M10,169 H110 M10,175 H110" stroke="rgba(60,35,15,.35)" stroke-width=".8"/>
+        <path d="M10,164 H110 M10,180 H110" stroke="#3a2414" stroke-width="1.4"/>
+
+        <!-- stern seat -->
+        <rect x="10" y="232" width="100" height="60" fill="url(#seat)"/>
+        <path d="M30,232 V292 M40,232 V292 M50,232 V292 M60,232 V292 M70,232 V292 M80,232 V292 M90,232 V292"
+              stroke="rgba(60,35,15,.4)" stroke-width=".9"/>
+        <path d="M10,232 H110" stroke="#3a2414" stroke-width="2.5"/>
+      </g>
+
+      <!-- gunwale (top rail) -->
+      <path d="M60,2 C92,36 107,100 107,170 C107,232 100,268 93,290 L27,290 C20,268 13,232 13,170 C13,100 28,36 60,2 Z"
+            fill="none" stroke="#7a5230" stroke-width="3"/>
+      <path d="M60,16 C86,46 98,104 98,170 C98,226 93,260 86,280 L34,280 C27,260 22,226 22,170 C22,104 34,46 60,16 Z"
+            fill="none" stroke="#2b1a0c" stroke-width="2"/>
+      <path d="M27,289 L93,289" stroke="#3d2715" stroke-width="4"/>
+
+      <!-- bow ring + rope coil -->
+      <circle cx="60" cy="9" r="2.6" fill="none" stroke="#9aa3a8" stroke-width="1.4"/>
+      <path d="M60,11 Q65,20 62,28" fill="none" stroke="#c2ab7e" stroke-width="2"/>
+      <g fill="none" stroke="#c8b48a" stroke-width="2">
+        <circle cx="60" cy="38" r="9.5"/>
+        <circle cx="60" cy="38" r="6.8"/>
+        <circle cx="60" cy="38" r="4.2"/>
+      </g>
+      <circle cx="60" cy="38" r="1.8" fill="#8a7650"/>
+
+      <!-- folded blanket on the middle seat -->
+      <g transform="rotate(-8 61 172)">
+        <rect x="47" y="160" width="28" height="24" rx="2" fill="#5a2230"/>
+        <path d="M47,166 H75 M47,178 H75 M54,160 V184 M68,160 V184" stroke="#7b3445" stroke-width="2"/>
+        <path d="M47,172 H75" stroke="#2c0f17" stroke-width="1.2"/>
+        <rect x="47" y="160" width="28" height="24" rx="2" fill="none" stroke="rgba(0,0,0,.35)"/>
+      </g>
+
+      <!-- bucket -->
+      <circle cx="43" cy="80" r="9" fill="#3d4349" stroke="#7e8790" stroke-width="2"/>
+      <circle cx="43" cy="80" r="5.8" fill="#1f2428"/>
+      <circle cx="43" cy="80" r="4.9" fill="rgba(70,110,140,.45)"/>
+      <path d="M34,80 A9,9 0 0 0 52,80" fill="none" stroke="#9aa3aa" stroke-width="1"/>
+
+      <!-- fishing rod -->
+      <path d="M89,248 L81,58" stroke="#24170c" stroke-width="1.7" stroke-linecap="round"/>
+      <circle cx="88" cy="224" r="3.6" fill="#555b60" stroke="#80878c" stroke-width=".8"/>
+
+      <!-- oarlocks -->
+      <circle cx="14"  cy="145" r="4" fill="#6f777d" stroke="#c0c8cc" stroke-width="1"/>
+      <circle cx="106" cy="145" r="4" fill="#6f777d" stroke="#c0c8cc" stroke-width="1"/>
+
+      <!-- boatman's legs (silhouette) -->
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- rim light so the silhouette reads against the boat -->
+        <path d="M53,116 Q48,128 49,134 L49,146" stroke="rgba(255,190,120,.22)" stroke-width="12"/>
+        <path d="M67,116 Q72,128 71,134 L71,146" stroke="rgba(255,190,120,.22)" stroke-width="12"/>
+        <path d="M53,116 Q48,128 49,134 L49,146" stroke="#101215" stroke-width="10"/>
+        <path d="M67,116 Q72,128 71,134 L71,146" stroke="#101215" stroke-width="10"/>
+      </g>
+      <!-- knees -->
+      <circle cx="49" cy="132" r="5.6" fill="#16181c"/>
+      <circle cx="71" cy="132" r="5.6" fill="#16181c"/>
+      <!-- feet -->
+      <ellipse cx="48.5" cy="150" rx="3.6" ry="5" fill="#0b0c0e"/>
+      <ellipse cx="71.5" cy="150" rx="3.6" ry="5" fill="#0b0c0e"/>
+
+      <!-- oars (rotated by script.js as the boatman rows) -->
+      <g id="oarL" stroke-linecap="round">
+        <line x1="42" y1="126" x2="-60" y2="195" stroke="url(#oarWood)" stroke-width="4.5"/>
+        <line x1="42" y1="126" x2="50"  y2="120.5" stroke="#3b2716" stroke-width="5.5"/>
+        <line x1="18.1" y1="142.2" x2="9.9" y2="147.8" stroke="#2e1d10" stroke-width="7"/>
+        <ellipse id="bladeL" cx="-73" cy="204" rx="17" ry="6.5" transform="rotate(-34.2 -73 204)" fill="url(#oarWood)" opacity=".85"/>
+      </g>
+      <g id="oarR" stroke-linecap="round">
+        <line x1="78" y1="126" x2="180" y2="195" stroke="url(#oarWood)" stroke-width="4.5"/>
+        <line x1="78" y1="126" x2="70"  y2="120.5" stroke="#3b2716" stroke-width="5.5"/>
+        <line x1="101.9" y1="142.2" x2="110.1" y2="147.8" stroke="#2e1d10" stroke-width="7"/>
+        <ellipse id="bladeR" cx="193" cy="204" rx="17" ry="6.5" transform="rotate(34.2 193 204)" fill="url(#oarWood)" opacity=".85"/>
+      </g>
+
+      <!-- boatman (shadow figure, wearing a round bamboo hat, facing the stern as he rows) -->
+      <g id="boatman">
+        <path id="armL" fill="none" stroke="#121417" stroke-width="5.6" stroke-linecap="round"/>
+        <path id="armR" fill="none" stroke="#121417" stroke-width="5.6" stroke-linecap="round"/>
+        <circle id="handL" r="3" fill="#1c1712"/>
+        <circle id="handR" r="3" fill="#1c1712"/>
+        <g id="upper">
+          <!-- shoulders + back -->
+          <path d="M43,111 Q44,104 52,103 L68,103 Q76,104 77,111 Q76,119 68,120 L52,120 Q44,119 43,111 Z"
+                fill="#121417" stroke="rgba(255,190,120,.3)" stroke-width="1"/>
+          <path d="M60,104 V120" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <circle cx="60" cy="110" r="11.5" fill="url(#hat)" stroke="rgba(255,190,120,.25)" stroke-width=".8"/>
+          <circle cx="60" cy="110" r="11.5" fill="url(#warmRim)"/>
+          <g fill="none" stroke="rgba(255,235,200,.08)" stroke-width=".7">
+            <circle cx="60" cy="110" r="8"/>
+            <circle cx="60" cy="110" r="4.5"/>
+            <path d="M60,98.5 V121.5 M48.5,110 H71.5 M51.9,101.9 L68.1,118.1 M68.1,101.9 L51.9,118.1"/>
+          </g>
+          <circle cx="60" cy="110" r="1.4" fill="#4a3d2e"/>
+        </g>
+      </g>
+
+      <!-- lantern light falling on the boat -->
+      <circle class="lamp-light" cx="81" cy="268" r="120" fill="url(#lampLight)" clip-path="url(#outerClip)"/>
+
+      <!-- the girl: lying back against the stern with her head on a cushion,
+           looking up at the sky (so from above we see her face) -->
+      <g id="girl">
+        <defs>
+          <radialGradient id="skin" fx=".62" fy=".68" r=".62">
+            <stop offset="0" stop-color="#e3a978"/>
+            <stop offset=".6" stop-color="#b87b4f"/>
+            <stop offset="1" stop-color="#7a482b"/>
+          </radialGradient>
+          <linearGradient id="saree" x1="0" x2="1">
+            <stop offset="0" stop-color="#6e1222"/>
+            <stop offset=".55" stop-color="#b3263b"/>
+            <stop offset="1" stop-color="#7a1626"/>
+          </linearGradient>
+        </defs>
+
+        <!-- cushion under her head -->
+        <rect x="43" y="258" width="34" height="20" rx="8" fill="#24504f" stroke="rgba(235,190,100,.6)" stroke-width="1"/>
+        <path d="M47,268 H73" stroke="rgba(235,190,100,.35)" stroke-width="1" stroke-dasharray="1.5 2"/>
+
+        <!-- long hair spread over the cushion, one lock falling over her shoulder -->
+        <path d="M50,255 C45,262 46,273 52,279 C56,283 64,283 68,279 C74,273 75,262 70,255 C66,250 54,250 50,255 Z" fill="#0d0907"/>
+        <path id="girlHair" d="M51,258 C44,258 40,252 39,244 C38,238 40,233 43,230 C43,236 44,243 47,248 C49,251 51,254 53,256 Z" fill="#0d0907"/>
+        <!-- jasmine flowers in her hair -->
+        <circle cx="69.5" cy="262" r="1.4" fill="#fff4e4"/>
+        <circle cx="70.6" cy="265.6" r="1.4" fill="#fff4e4"/>
+        <circle cx="70" cy="269.2" r="1.4" fill="#fff4e4"/>
+        <circle cx="68.4" cy="272.4" r="1.3" fill="#fff4e4"/>
+
+        <!-- red saree over her legs, knees turned a little to one side -->
+        <path d="M48,231 C46,221 50,211 55,203 C57,198 61,195 66,195 C71,196 73,200 72,206 C71,214 73,223 72,231 Z"
+              fill="url(#saree)" stroke="rgba(235,190,100,.8)" stroke-width="1"/>
+        <path d="M56,226 Q57,214 61,204 M64,227 Q64,216 67,205" fill="none" stroke="rgba(60,0,10,.35)" stroke-width=".9"/>
+        <path d="M55,203 C57,198 61,195.5 66,195.5 C70,196 72,199 72,203" fill="none" stroke="rgba(240,195,100,.9)" stroke-width="1.6"/>
+
+        <!-- bare feet with red alta and anklets -->
+        <ellipse cx="61" cy="193" rx="2.3" ry="3.3" fill="#b87b4f"/>
+        <ellipse cx="67" cy="193.5" rx="2.3" ry="3.3" fill="#b87b4f"/>
+        <path d="M59,191.2 Q61,189 63,191.2 M65,191.7 Q67,189.5 69,191.7" fill="none" stroke="#c41e3a" stroke-width="1.1"/>
+        <path d="M58.8,195.6 H63.2 M64.8,196.1 H69.2" stroke="rgba(240,200,110,.9)" stroke-width=".8" stroke-dasharray=".8 .8"/>
+
+        <!-- blouse -->
+        <path d="M47,247 Q46,240 50,236 Q52,233 54,231 L66,231 Q68,233 70,236 Q74,240 73,247 Q67,251 60,251 Q53,251 47,247 Z" fill="#3c0b16"/>
+
+        <!-- end of the saree across her chest, falling over the side -->
+        <path d="M68,229 L74,233 L51,250 L45,246 Z" fill="url(#saree)" stroke="rgba(235,190,100,.8)" stroke-width=".9"/>
+        <path d="M45,246 Q36,250 32,243 Q30,235 35,228 L41,231 Q37,237 40,242 Q42,245 47,247 Z"
+              fill="#a82236" stroke="rgba(235,190,100,.8)" stroke-width=".9"/>
+
+        <!-- one hand trailing in the water (with bangles)... -->
+        <path d="M48,245 Q31,247 13,240" fill="none" stroke="#b07448" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="19.2" cy="242.3" r="2.1" fill="none" stroke="#e8b84a" stroke-width=".9"/>
+        <circle cx="16.8" cy="241.5" r="2.1" fill="none" stroke="#d0182f" stroke-width=".9"/>
+        <ellipse cx="9.5" cy="238.5" rx="3.3" ry="2.3" transform="rotate(20 9.5 238.5)" fill="#b07448"/>
+        <!-- ...the other holding a little lotus -->
+        <path id="gArm" d="M72,244 Q77,236 67.5,230.5" fill="none" stroke="#b07448" stroke-width="3.6" stroke-linecap="round"/>
+        <g id="gLotus" transform="translate(64.5 226.5)">
+          <ellipse cx="0" cy="-2.6" rx="1.4" ry="2.8" fill="#f7a9c0"/>
+          <ellipse cx="0" cy="-2.6" rx="1.4" ry="2.8" fill="#f28cab" transform="rotate(72)"/>
+          <ellipse cx="0" cy="-2.6" rx="1.4" ry="2.8" fill="#f7a9c0" transform="rotate(144)"/>
+          <ellipse cx="0" cy="-2.6" rx="1.4" ry="2.8" fill="#f28cab" transform="rotate(216)"/>
+          <ellipse cx="0" cy="-2.6" rx="1.4" ry="2.8" fill="#f7a9c0" transform="rotate(288)"/>
+          <circle r="1.2" fill="#ffd85e"/>
+        </g>
+        <circle id="gHand" cx="67.5" cy="230.5" r="2.4" fill="#b07448"/>
+
+        <!-- neck -->
+        <rect x="57.2" y="246.5" width="5.6" height="5.5" rx="2" fill="#a86e44"/>
+
+        <!-- face (chin toward the boatman, forehead toward the cushion) -->
+        <ellipse cx="60" cy="257" rx="6.3" ry="7.6" fill="url(#skin)"/>
+        <!-- hairline, with sindoor in the parting -->
+        <path d="M53.8,259.5 Q54.5,266.5 60,266.8 Q65.5,266.5 66.2,259.5 Q65,264.6 60,264.8 Q55,264.6 53.8,259.5 Z" fill="#0d0907"/>
+        <path d="M60,264.6 V268.5" stroke="#d0182f" stroke-width=".9"/>
+        <!-- eyebrows + closed eyes -->
+        <path d="M55.2,260.6 Q57,261.8 58.7,260.9 M61.3,260.9 Q63,261.8 64.8,260.6" fill="none" stroke="#241208" stroke-width=".75" stroke-linecap="round"/>
+        <path d="M55.5,258.3 Q57,257.1 58.6,258.2 M61.4,258.2 Q63,257.1 64.5,258.3" fill="none" stroke="#241208" stroke-width=".85" stroke-linecap="round"/>
+        <!-- nose, lips, blush -->
+        <path d="M60,256.6 L59.6,254.5 Q60,254 60.5,254.4" fill="none" stroke="rgba(90,45,25,.55)" stroke-width=".6"/>
+        <ellipse cx="56" cy="255.4" rx="1.6" ry="1" fill="rgba(220,90,90,.2)"/>
+        <ellipse cx="64" cy="255.4" rx="1.6" ry="1" fill="rgba(220,90,90,.2)"/>
+        <path d="M58.1,252.4 Q60,253.7 61.9,252.4 Q60,251.2 58.1,252.4 Z" fill="#a8283a"/>
+        <!-- bindi + earrings -->
+        <circle cx="60" cy="262.7" r=".95" fill="#d0182f"/>
+        <circle cx="53.5" cy="257.5" r="1.2" fill="#e8b84a"/>
+        <circle cx="66.5" cy="257.5" r="1.2" fill="#e8b84a"/>
+      </g>
+
+      <!-- the girl standing up in the "Titanic" pose (shown when you tap her) -->
+      <g id="girlStand" opacity="0">
+        <!-- her shadow on the boat -->
+        <ellipse cx="64" cy="245" rx="17" ry="13" fill="rgba(0,0,0,.35)"/>
+        <path d="M30,238 L90,238" stroke="rgba(0,0,0,.25)" stroke-width="4" stroke-linecap="round"/>
+        <!-- saree skirt, blown back a little by the wind -->
+        <path d="M48,236 Q46,246 50,252 Q60,257 70,252 Q74,246 72,236 Q60,231 48,236 Z"
+              fill="url(#saree)" stroke="rgba(235,190,100,.85)" stroke-width="1"/>
+        <path d="M51,249 Q60,254 69,249" fill="none" stroke="rgba(240,195,100,.9)" stroke-width="1.4"/>
+        <!-- the end of the saree streaming behind her -->
+        <path id="gsAnchal" d="M50,232 Q42,244 46,258 Q50,270 45,282 L53,281 Q57,268 54,256 Q51,244 55,233 Z"
+              fill="#a82236" stroke="rgba(235,190,100,.8)" stroke-width=".9"/>
+        <!-- arms (script.js swings them out wide) -->
+        <g id="gsArmL">
+          <path d="M49,234 L22,235.5" stroke="#b07448" stroke-width="4.4" stroke-linecap="round"/>
+          <circle cx="28.4" cy="235.2" r="2" fill="none" stroke="#d0182f" stroke-width=".9"/>
+          <circle cx="26" cy="235.3" r="2" fill="none" stroke="#e8b84a" stroke-width=".9"/>
+          <ellipse cx="19.6" cy="235.6" rx="3" ry="2.2" fill="#b07448"/>
+        </g>
+        <g id="gsArmR">
+          <path d="M71,234 L98,235.5" stroke="#b07448" stroke-width="4.4" stroke-linecap="round"/>
+          <circle cx="91.6" cy="235.2" r="2" fill="none" stroke="#d0182f" stroke-width=".9"/>
+          <circle cx="94" cy="235.3" r="2" fill="none" stroke="#e8b84a" stroke-width=".9"/>
+          <ellipse cx="100.4" cy="235.6" rx="3" ry="2.2" fill="#b07448"/>
+        </g>
+        <!-- shoulders, with the saree across -->
+        <path d="M47,234 Q47,229 53,228.5 L67,228.5 Q73,229 73,234 Q73,239 67,239.5 L53,239.5 Q47,239 47,234 Z"
+              fill="#3c0b16" stroke="rgba(255,190,120,.35)" stroke-width=".8"/>
+        <path d="M50,229 L70,239 L67,240 L48,231 Z" fill="url(#saree)" stroke="rgba(235,190,100,.6)" stroke-width=".6"/>
+        <!-- long hair blowing back -->
+        <path id="gsHair" d="M54.5,236 Q53,246 57,254 Q59.5,259 60,264 Q61,259 63,254 Q67,246 65.5,236 Z" fill="#0d0907"/>
+        <!-- her head from above: parting with sindoor, jasmine, earrings -->
+        <circle cx="60" cy="233.5" r="6.8" fill="#0d0907" stroke="rgba(255,190,120,.4)" stroke-width=".8"/>
+        <path d="M60,227 V232" stroke="#d0182f" stroke-width=".9"/>
+        <circle cx="55" cy="237.5" r="1.3" fill="#fff4e4"/>
+        <circle cx="58" cy="239.4" r="1.3" fill="#fff4e4"/>
+        <circle cx="62" cy="239.4" r="1.3" fill="#fff4e4"/>
+        <circle cx="65" cy="237.5" r="1.3" fill="#fff4e4"/>
+        <circle cx="53.2" cy="234" r="1.1" fill="#e8b84a"/>
+        <circle cx="66.8" cy="234" r="1.1" fill="#e8b84a"/>
+      </g>
+
+      <!-- lantern beside her on the back seat -->
+      <rect x="74" y="261" width="14" height="14" rx="2" fill="#26292c" stroke="#454a4f"/>
+      <circle class="lamp-glass" cx="81" cy="268" r="6" fill="url(#glass)"/>
+      <circle cx="81" cy="268" r="3.4" fill="#1d1f21" stroke="#555" stroke-width=".7"/>
+      <path d="M74.5,268 A6.5,6.5 0 0 1 87.5,268" fill="none" stroke="#7a7f84" stroke-width="1"/>
+
+      <!-- double-tap the boat: they hold up a paper message between them -->
+      <g id="banner" opacity="0">
+        <defs>
+          <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#e2e4e7"/>
+            <stop offset=".55" stop-color="#c8cbcf"/>
+            <stop offset="1" stop-color="#aeb2b7"/>
+          </linearGradient>
+          <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset=".5" stop-color="#bfe8ff"/>
+            <stop offset="1" stop-color="#7cc4f0"/>
+          </linearGradient>
+        </defs>
+        <g id="bannerPaper">
+          <!-- its shadow on the boat -->
+          <path d="M-7,143 Q60,139 143,143 L143,215 Q60,219 -7,215 Z" fill="rgba(0,0,0,.35)"/>
+          <!-- the grey paper, slightly wavy at the edges -->
+          <path d="M-15,134 Q20,131 60,134 Q100,137 135,134 L135,206 Q100,209 60,206 Q20,203 -15,206 Z"
+                fill="url(#paper)" stroke="rgba(90,95,105,.55)" stroke-width=".8"/>
+          <path d="M-15,170 H135 M60,134 V206" stroke="rgba(0,0,0,.06)" stroke-width=".8"/>
+          <!-- the message -->
+          <g fill="#262830" text-anchor="middle"
+             font-family="'Segoe Script','Bradley Hand','Snell Roundhand','Brush Script MT','Lucida Handwriting',cursive">
+            <text x="60" y="161" font-size="25" font-weight="bold">Shreya</text>
+            <text x="60" y="181" font-size="12.5">in the sky with</text>
+            <text x="60" y="199" font-size="15" font-weight="bold">diamonds !</text>
+          </g>
+          <!-- little diamonds twinkling around the words -->
+          <g class="dia" style="animation-delay:0s"   transform="translate(-4 146)"><path d="M0,-4.5 L3.2,0 L0,4.5 L-3.2,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+          <g class="dia" style="animation-delay:.4s"  transform="translate(124 148)"><path d="M0,-4.5 L3.2,0 L0,4.5 L-3.2,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+          <g class="dia" style="animation-delay:.8s"  transform="translate(2 196)"><path d="M0,-3.5 L2.5,0 L0,3.5 L-2.5,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+          <g class="dia" style="animation-delay:1.2s" transform="translate(119 195)"><path d="M0,-3.5 L2.5,0 L0,3.5 L-2.5,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+          <g class="dia" style="animation-delay:.6s"  transform="translate(103 162)"><path d="M0,-3 L2.2,0 L0,3 L-2.2,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+          <g class="dia" style="animation-delay:1s"   transform="translate(16 165)"><path d="M0,-3 L2.2,0 L0,3 L-2.2,0 Z" fill="url(#gem)" stroke="#5aa6d6" stroke-width=".5"/></g>
+        </g>
+      </g>
+    </svg>
+
+    <!-- Fireflies (drawn by script.js) -->
+    <canvas id="fx"></canvas>
+
+    <div class="mist mist-1"></div>
+    <div class="mist mist-2"></div>
+    <!-- warm morning light near the end of the song -->
+    <div class="dawn"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <h1 class="title"><span class="river-name" lang="bn">নদীর নাম শ্রেয়া !</span><span id="placeNow"></span></h1>
+  <div class="place-label" id="placeLabel"></div>
+  <p class="hint">tap the water, the boatman, or the girl</p>
+
+  <!-- ===================== MUSIC PLAYER ===================== -->
+  <!-- Your songs are set at the top of script.js (the PLAYLIST list) -->
+  <div class="player" id="player">
+    <div class="row">
+      <button class="btn-small" id="prevBtn" aria-label="Previous">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" fill="currentColor"/></svg>
+      </button>
+
+      <button class="btn-play" id="playBtn" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+
+      <button class="btn-small" id="nextBtn" aria-label="Next">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z" fill="currentColor"/></svg>
+      </button>
+
+      <div class="track">
+        <div class="track-top">
+          <span class="track-name" id="trackName">—</span>
+          <span class="eq"><i></i><i></i><i></i></span>
+        </div>
+        <input type="range" id="progress" min="0" max="100" step="0.1" value="0" />
+        <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+      </div>
+
+      <!-- phone only: fold the player down to just the play button -->
+      <button class="btn-collapse" id="collapseBtn" aria-label="Hide player">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="row vol-row">
+      <button class="btn-icon" id="muteBtn" aria-label="Mute">
+        <svg id="volIcon" viewBox="0 0 24 24" width="16" height="16"></svg>
+      </button>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7" />
+    </div>
+  </div>
+
+  <!-- phone only: fullscreen button -->
+  <button class="fs-btn" id="fsBtn" aria-label="Fullscreen">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- phone held upright: ask to turn it sideways -->
+  <div class="rotate" id="rotate">
+    <div class="phone-icon"></div>
+    <h2>Turn your phone sideways</h2>
+    <p>The river looks best in landscape</p>
+    <button class="btn-full" id="fullBtn">Go fullscreen</button>
+    <button class="btn-skip" id="skipBtn">continue in portrait</button>
+  </div>
+
+  <audio id="audio" preload="metadata"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
